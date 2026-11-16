@@ -483,3 +483,19 @@ async def test_multiple_stream_decorators_without_node_id():
     state = SimpleState()
     result = await graph.run(state=state)
     assert sorted(result) == [2, 5, 10]
+
+
+async def test_long_transform_chain():
+    g = GraphBuilder(input_type=int, output_type=int)
+
+    def inc(ctx: StepContext[None, None, int]) -> int:
+        return ctx.inputs + 1
+
+    path = g.edge_from(g.start_node)
+    for _ in range(1100):
+        path = path.transform(inc)
+    g.add(path.to(g.end_node))
+
+    graph = g.build()
+    result = await graph.run(inputs=0)
+    assert result == 1100
