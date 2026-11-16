@@ -3438,3 +3438,16 @@ def test_messages_builder_copies_parts_it_did_not_make():
     assert own_parts == [TextPart('a')]
     assert message.parts == [TextPart('a'), TextPart('b'), TextPart('c')]
     assert builder.last_modified(checkpoint, of_type=ModelResponse) is message
+
+
+def test_messages_builder_last_modified_returns_most_recent_match():
+    builder = MessagesBuilder()
+    checkpoint = builder.checkpoint()
+    builder.add(TextPart('first'))
+    builder.add(UserPromptPart('question'))
+    builder.add(TextPart('last'))
+
+    result = builder.last_modified(checkpoint, of_type=ModelResponse)
+
+    assert result is not None
+    assert result.parts == [TextPart('last')]
